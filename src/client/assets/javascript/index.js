@@ -182,7 +182,7 @@ function renderRacerCars(racers) {
 
 	return `
 		<ul id="racers">
-			${reuslts}
+			${results}
 		</ul>
 	`
 }
@@ -320,7 +320,6 @@ function defaultFetchOpts() {
 // TODO - Make a fetch call (with error handling!) to each of the following API endpoints
 
 async function getTracks() {
-	// GET request to `${SERVER}/api/tracks`
 	try {
 		const response = await fetch(`${SERVER}/api/tracks`);
 		const tracks = await response.json();
@@ -330,8 +329,14 @@ async function getTracks() {
 	}
 }
 
-function getRacers() {
-	// GET request to `${SERVER}/api/cars`
+async function getRacers() {
+	try {
+		const response = await fetch(`${SERVER}/api/cars`);
+		const racers = await response.json();
+		return racers;
+	} catch (error) {
+		console.error(`Error while retrieving racers: ${error.message}`);
+	}
 }
 
 function createRace(player_id, track_id) {
