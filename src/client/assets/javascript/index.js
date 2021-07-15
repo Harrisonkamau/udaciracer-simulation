@@ -5,6 +5,7 @@ var store = {
 	track_id: undefined,
 	player_id: undefined,
 	race_id: undefined,
+	tracks: [],
 }
 
 // We need our javascript to wait until the DOM is loaded
@@ -74,8 +75,14 @@ async function delay(ms) {
 
 // This async function controls the flow of the race, add the logic and error handling
 async function handleCreateRace() {
-	// render starting UI
-	renderAt('#race', renderRaceStartView())
+	try {
+		// render starting UI
+		const selectedTrack = getTrackById(store.track_id);
+		renderAt('#race', renderRaceStartView(selectedTrack));
+
+	} catch (error) {
+		console.error('Could create a race', error.message);
+	}
 
 	// TODO - Get player_id and track_id from the store
 
@@ -157,10 +164,10 @@ function handleSelectTrack(target) {
 	}
 
 	// add class selected to current target
-	target.classList.add('selected')
+	target.classList.add('selected');
 
 	// TODO - save the selected track id to the store
-
+	Object.assign(store, { track_id: target.id });
 }
 
 function handleAccelerate() {
@@ -323,6 +330,7 @@ async function getTracks() {
 	try {
 		const response = await fetch(`${SERVER}/api/tracks`);
 		const tracks = await response.json();
+		Object.assign(store, { tracks });
 		return tracks;
 	} catch (error) {
 		console.error(`Error while retrieving tracks: ${error.message}`);
@@ -352,6 +360,20 @@ function createRace(player_id, track_id) {
 	})
 	.then(res => res.json())
 	.catch(err => console.log("Problem with createRace request::", err))
+}
+
+function getTrackById(id) {
+	try {
+		const track = store.tracks.find((track) => Number(track.id) === Number(id));
+
+		if (!track) {
+			throw Error(`Track with ID: ${id} cannot be found`);
+		}
+
+		return track;
+	} catch (error) {
+		console.error('An error occurred while fetching a track by id: ', error.message);
+	}
 }
 
 function getRace(id) {
