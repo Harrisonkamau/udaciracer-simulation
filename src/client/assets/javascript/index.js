@@ -76,26 +76,22 @@ async function delay(ms) {
 // This async function controls the flow of the race, add the logic and error handling
 async function handleCreateRace() {
 	try {
-		// render starting UI
 		const selectedTrack = getTrackById(store.track_id);
 		renderAt('#race', renderRaceStartView(selectedTrack));
 
-	} catch (error) {
-		console.error('Could create a race', error.message);
-	}
+		const defaultPlayerId = store.player_id !== undefined ? store.player_id : 1;
+		const race = await createRace({ player_id: defaultPlayerId, track_id: store.track_id });
 
-	// TODO - Get player_id and track_id from the store
-
-	// const race = TODO - invoke the API call to create the race, then save the result
-
-	// TODO - update the store with the race id
-
-	// The race has been created, now start the countdown
-	// TODO - call the async function runCountdown
+		Object.assign(store, { race_id: race.ID, player_id: defaultPlayerId });
+		await runCountdown();
 
 	// TODO - call the async function startRace
 
 	// TODO - call the async function runRace
+
+	} catch (error) {
+		console.error('Could create a race', error.message);
+	}
 }
 
 function runRace(raceID) {
@@ -122,20 +118,23 @@ function runRace(raceID) {
 async function runCountdown() {
 	try {
 		// wait for the DOM to load
-		await delay(1000)
-		let timer = 3
+		await delay(1000);
+		let timer = 3;
 
 		return new Promise(resolve => {
-			// TODO - use Javascript's built in setInterval method to count down once per second
+			const intervalId = setInterval(() => {
+				document.getElementById('big-numbers').innerHTML = --timer;
 
-			// run this DOM manipulation to decrement the countdown for the user
-			document.getElementById('big-numbers').innerHTML = --timer
+				if (timer === 0) {
+					clearInterval(intervalId);
+					resolve();
 
-			// TODO - if the countdown is done, clear the interval, resolve the promise, and return
-
-		})
+					return;
+				}
+			}, 1000);
+		});
 	} catch(error) {
-		console.log(error);
+		console.log('[runCountdown] Error --->', error);
 	}
 }
 
@@ -144,12 +143,12 @@ function handleSelectPodRacer(target) {
 
 	// remove class selected from all racer options
 	const selected = document.querySelector('#racers .selected')
-	if(selected) {
-		selected.classList.remove('selected')
+	if (selected) {
+		selected.classList.remove('selected');
 	}
 
 	// add class selected to current target
-	target.classList.add('selected')
+	target.classList.add('selected');
 
 	// TODO - save the selected racer to the store
 }
@@ -347,19 +346,19 @@ async function getRacers() {
 	}
 }
 
-function createRace(player_id, track_id) {
-	player_id = parseInt(player_id)
-	track_id = parseInt(track_id)
-	const body = { player_id, track_id }
+function createRace({ track_id, player_id = 1 }) {
+	player_id = parseInt(player_id);
+	track_id = parseInt(track_id);
+	const body = { player_id, track_id };
 
 	return fetch(`${SERVER}/api/races`, {
 		method: 'POST',
 		...defaultFetchOpts(),
 		dataType: 'jsonp',
-		body: JSON.stringify(body)
+		body: JSON.stringify(body),
 	})
 	.then(res => res.json())
-	.catch(err => console.log("Problem with createRace request::", err))
+	.catch(err => console.log('Problem with createRace request::', err));
 }
 
 function getTrackById(id) {
