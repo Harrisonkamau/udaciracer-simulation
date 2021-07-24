@@ -384,7 +384,6 @@ async function getRaceById(id) {
 
 function startRace(id) {
 	const parsedId = parseInt(id) - 1;
-	Object.assign(store, { race_id: parsedId });
 
 	return fetch(`${SERVER}/api/races/${parsedId}/start`, {
 		method: 'POST',
@@ -396,13 +395,12 @@ function startRace(id) {
 
 async function accelerate(id) {
 	try {
-		const parsedId = parseInt(id) - 1;
+		const parsedId = parseInt(id, 10);
 		const response = await fetch(`${SERVER}/api/races/${parsedId}/accelerate`, {
 			method: 'POST',
 			...defaultFetchOpts(),
 		});
 
-		Object.assign(store, { race_id: parsedId });
 		console.log('Acceleration begun', response.clone());
 	} catch (error) {
 		console.error(`[accelerate] Error while accelerating: ${error.message}`);
