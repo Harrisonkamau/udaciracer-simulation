@@ -259,27 +259,27 @@ function renderRaceStartView(track, racers) {
 }
 
 function resultsView(positions) {
-	positions.sort((a, b) => (a.final_position > b.final_position) ? 1 : -1)
+	const sortedPositions = positions.sort((a, b) => (a.final_position > b.final_position) ? 1 : -1);
 
 	return `
 		<header>
 			<h1>Race Results</h1>
 		</header>
 		<main>
-			${raceProgress(positions)}
+			${raceProgress(sortedPositions)}
 			<a href="/race">Start a new race</a>
 		</main>
 	`
 }
 
 function raceProgress(positions) {
-	let userPlayer = positions.find(e => e.id === store.player_id)
-	userPlayer.driver_name += " (you)"
+	const userPlayer = positions.find(e => e.id === store.player_id);
+	userPlayer.driver_name += " (you)";
 
-	positions = positions.sort((a, b) => (a.segment > b.segment) ? -1 : 1)
-	let count = 1
+	const sortedPositions = positions = positions.sort((a, b) => (a.segment > b.segment) ? -1 : 1);
+	let count = 1;
 
-	const results = positions.map(p => {
+	const results = sortedPositions.map(p => {
 		return `
 			<tr>
 				<td>
@@ -287,7 +287,7 @@ function raceProgress(positions) {
 				</td>
 			</tr>
 		`
-	})
+	}).join(' ');
 
 	return `
 		<main>
