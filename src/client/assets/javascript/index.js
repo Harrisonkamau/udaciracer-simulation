@@ -1,5 +1,3 @@
-// PROVIDED CODE BELOW (LINES 1 - 80) DO NOT REMOVE
-
 // The store will hold all information needed globally
 var store = {
 	track_id: undefined,
@@ -71,7 +69,6 @@ async function delay(ms) {
 		console.log(error)
 	}
 }
-// ^ PROVIDED CODE ^ DO NOT REMOVE
 
 // This async function controls the flow of the race, add the logic and error handling
 async function handleCreateRace() {
@@ -86,10 +83,8 @@ async function handleCreateRace() {
 
 		await runCountdown();
 
-		// TODO - call the async function startRace
 		await startRace(race.ID);
 
-	// TODO - call the async function runRace
 		await runRace(race.ID);
 
 	} catch (error) {
@@ -99,7 +94,6 @@ async function handleCreateRace() {
 
 function runRace(raceID) {
 	return new Promise(resolve => {
-	// TODO - use Javascript's built in setInterval method to get race info every 500ms
 	const intervalID = setInterval(async () => {
 		const parsedId = parseInt(raceID) - 1;
 		const race = await getRaceById(parsedId);
@@ -110,6 +104,7 @@ function runRace(raceID) {
 			}
 
 			if (race.status === 'finished') {
+				console.log('race is finished');
 				clearInterval(intervalID);
 				renderAt('#race', resultsView(race.positions));
 				resolve(race);
@@ -175,12 +170,11 @@ function handleSelectTrack(target) {
 function handleAccelerate() {
 	console.log("accelerate button clicked");
 	accelerate(store.race_id)
-		.then((res) => console.log('[handleAccelerate]', res))
+		.then((res) => console.log('[handleAccelerate] triggered'))
 		.catch((error) => console.error('[handleAccelerate] Error: ', error));
 }
 
 // HTML VIEWS ------------------------------------------------
-// Provided code - do not remove
 
 function renderRacerCars(racers) {
 	if (!racers.length) {
@@ -311,8 +305,6 @@ function renderAt(element, html) {
 	node.innerHTML = html
 }
 
-// ^ Provided code ^ do not remove
-
 
 // API CALLS ------------------------------------------------
 
@@ -327,8 +319,6 @@ function defaultFetchOpts() {
 		},
 	};
 }
-
-// TODO - Make a fetch call (with error handling!) to each of the following API endpoints
 
 async function getTracks() {
 	try {
@@ -380,20 +370,27 @@ function getTrackById(id) {
 	}
 }
 
-function getRaceById(id) {
-	return fetch(`${SERVER}/api/races/${id}`)
-		.then(res => res.json())
-		.catch(err => console.log(`Could not retrieve the race by id: ${err.message}`));
+async function getRaceById(id) {
+	try {
+		const parsedId = parseInt(id, 10);
+		const response = await fetch(`${SERVER}/api/races/${parsedId}`);
+		const data = await response.json();
+		return data;
+	} catch (error) {
+		console.log(`Could not retrieve the race by id: ${error.message}`)
+	}
 }
+
 
 function startRace(id) {
 	const parsedId = parseInt(id) - 1;
+	Object.assign(store, { race_id: parsedId });
 
 	return fetch(`${SERVER}/api/races/${parsedId}/start`, {
 		method: 'POST',
 		...defaultFetchOpts(),
 	})
-	.then(res => res.json())
+	.then(res => console.log('race has started', res.clone()))
 	.catch(err => console.error(`Could not start race: ${err.message}`));
 }
 
@@ -404,8 +401,9 @@ async function accelerate(id) {
 			method: 'POST',
 			...defaultFetchOpts(),
 		});
-		const data = await response.json();
-		return data;
+
+		Object.assign(store, { race_id: parsedId });
+		console.log('Acceleration begun', response.clone());
 	} catch (error) {
 		console.error(`[accelerate] Error while accelerating: ${error.message}`);
 	}
